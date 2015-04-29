@@ -46,7 +46,7 @@ class Manager(Thread):
                 build = Build(new_build)
                 build.user = User.fetch(new_build['username'],
                                         sub_objects=False)
-                build.project = Project.fetch(build.user,
+                build.project = Project.fetch(build.username,
                                               new_build['project_name'],
                                               sub_objects=False)
 
