@@ -54,6 +54,9 @@ workspace_path = '%(confdir)s/../output'
 
 rabbit_server = "127.0.0.1"
 rabbit_port = 5672
+rabbit_user = "guest"
+rabbit_password = "guest"
+rabbit_vhost = "/"
 rabbit_db = "joulupukki"
 mongo_server = "127.0.0.1"
 mongo_port = 27017
