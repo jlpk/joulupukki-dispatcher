@@ -22,7 +22,11 @@ class Manager(Thread):
         self.app = app
         self.build_list = {}
         self.carrier = Carrier(pecan.conf.rabbit_server,
-                               pecan.conf.rabbit_port, pecan.conf.rabbit_db)
+                               pecan.conf.rabbit_port,
+                               pecan.conf.rabbit_user,
+                               pecan.conf.rabbit_password,
+                               pecan.conf.rabbit_vhost,
+                               pecan.conf.rabbit_db)
         self.carrier.declare_queue('builds.queue')
 
     def shutdown(self):
