@@ -53,7 +53,7 @@ class Dispatcher(Thread):
             # TODO handle error
             raise Exception("%s should be a folder" % self.folder)
         # Prepare logger
-        self.logger = get_logger(self)
+        self.logger = get_logger(self.build)
 
     def git_clone(self):
         self.logger.info("Cloning")
@@ -130,14 +130,21 @@ class Dispatcher(Thread):
 
         carrier = Carrier(pecan.conf.rabbit_server,
                           pecan.conf.rabbit_port,
-                          pecan.conf.rabbit_db)
+                          pecan.conf.rabbit_user,
+                          pecan.conf.rabbit_password,
+                          pecan.conf.rabbit_vhost,
+                          pecan.conf.rabbit_db
+                          )
         # carrier.declare_queue('docker.queue')
         for distro_name, build_conf in packer_conf.items():
             if not hasattr(self.build, "forced_distro") or (
                     self.build.forced_distro == distro_name or
                     not self.build.forced_distro):
                 if 'type' not in build_conf:
-                    raise Exception("Invalid build_conf: no type present.")
+                    # TODO log this error for end users
+                    self.logger.error("missing type attribute in yml file")
+                    continue
+#                    raise Exception("Invalid build_conf: no type present.")
 
                 # if not build_conf['type'] == 'docker':
                 queue = "%s.queue" % build_conf['type']
