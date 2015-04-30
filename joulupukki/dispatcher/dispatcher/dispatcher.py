@@ -158,8 +158,8 @@ class Dispatcher(Thread):
                     'root_folder': root_folder,
                     'log_path': get_logger_path(self.build),
                     'id_': self.id_,
-                    'build': self.build.dumps()
-
+                    'build': self.build.dumps(),
+                    'build_path': self.build.get_folder_path()
                 }
                 if not carrier.send_message(message, queue):
                     self.logger.error("Can't post message to rabbitmq")
