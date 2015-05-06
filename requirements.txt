@@ -3,3 +3,7 @@ pecan==0.8.3
 WSME==0.6.4
 PyYAML==3.11
 joulupukki.common
+
+# TODO remove this
+docker-py==1.2.2
+
