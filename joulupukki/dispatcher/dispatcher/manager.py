@@ -54,8 +54,9 @@ class Manager(object):
 
     def check_builds_status(self):
         builds = mongo.builds.find({"status": "building"})
-        for build in builds:
+        for b in builds:
             finished = 0
+            build = Build(b)
             jobs = build.get_jobs()
             if len(jobs) == build.job_count:
                 for job in jobs:
