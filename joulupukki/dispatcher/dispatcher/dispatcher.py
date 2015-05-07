@@ -142,10 +142,8 @@ class Dispatcher(Thread):
                     self.build.forced_distro == distro_name or
                     not self.build.forced_distro):
                 if 'type' not in build_conf:
-                    # TODO log this error for end users
-                    self.logger.error("missing type attribute in yml file")
-                    continue
-#                    raise Exception("Invalid build_conf: no type present.")
+                    # Default type is docker to keep backward compat
+                    build_conf['type'] = 'docker'
 
                 # if not build_conf['type'] == 'docker':
                 queue = "%s.queue" % build_conf['type']
@@ -166,6 +164,7 @@ class Dispatcher(Thread):
                     self.logger.error("Can't post message to rabbitmq")
                 else:
                     self.logger.info("Posted build to %s" % queue)
+                    self.build.inc_job_count()
 
     def run(self):
         # GIT

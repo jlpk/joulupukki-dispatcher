@@ -77,7 +77,7 @@ distros = (
 )
 docker_version = "1.14"
 ccache_path = '%(confdir)s/ccache'
-
+build_lifetime = 86400
 supported_build_type = ['docker', 'ios']
 #
 # All configurations are accessible at::

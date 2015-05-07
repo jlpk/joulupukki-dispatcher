@@ -53,17 +53,33 @@ class Manager(object):
             self.check_builds_status()
 
     def check_builds_status(self):
-        builds = mongo.builds.find({"status": "building"})
+        builds = mongo.builds.find({"status":  {"$nin" : ["succeeded", "failed"]}})
         for b in builds:
             finished = 0
             build = Build(b)
             jobs = build.get_jobs()
+
             if len(jobs) == build.job_count:
                 for job in jobs:
-                    if job.status == 'succeeded':
+                    if job.status in ['succeeded', 'failed']:
                         finished += 1
-                    elif job.status == 'failed':
-                        build.set_status('failed')
 
                 if finished == len(jobs):
+                    if all([True for j in jobs if j.status == 'succeeded']):
+                        build.set_status('succeeded')
+                    else:
+                        build.set_status('failed')
                     build.finishing()
+
+        # collect old jammed build
+        time_limit = time.time() - pecan.conf.build_lifetime
+        builds = mongo.builds.find({"status":  {"$nin" : ["succeeded", "failed"]},
+                                    "created" :{ "$lte": time_limit} })
+        for b in builds:
+            build = Build(b)
+            build.set_status('failed')
+            build.finishing()
+            jobs = build.get_jobs()
+            for job in jobs:
+                if job.status not in ['succeeded', 'failed']:
+                    job.set_status('failed')
