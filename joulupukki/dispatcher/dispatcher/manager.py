@@ -12,7 +12,6 @@ from joulupukki.common.carrier import Carrier
 
 class Manager(object):
     def __init__(self, app):
-        # Thread.__init__(self)
         self.must_run = False
         self.app = app
         self.build_list = {}
