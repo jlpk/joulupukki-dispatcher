@@ -1,23 +1,18 @@
-
 import logging
-
-
 import pecan
-
 import time
-from threading import Thread
 
 from joulupukki.dispatcher.dispatcher.dispatcher import Dispatcher
 from joulupukki.common.datamodel.build import Build
 from joulupukki.common.datamodel.project import Project
 from joulupukki.common.datamodel.user import User
-
+from joulupukki.common.database import mongo
 from joulupukki.common.carrier import Carrier
 
 
-class Manager(Thread):
+class Manager(object):
     def __init__(self, app):
-        Thread.__init__(self)
+        # Thread.__init__(self)
         self.must_run = False
         self.app = app
         self.build_list = {}
@@ -44,14 +39,31 @@ class Manager(Thread):
             build = None
             if new_build is not None:
                 build = Build(new_build)
-                build.user = User.fetch(new_build['username'],
+                if build:
+                    build.user = User.fetch(new_build['username'],
                                         sub_objects=False)
-                build.project = Project.fetch(build.username,
+                    build.project = Project.fetch(build.username,
                                               new_build['project_name'],
                                               sub_objects=False)
+                    logging.debug("Task received")
+                    build.set_status("dispatching")
+                    dispatcher = Dispatcher(build)
+                    self.build_list[dispatcher.uuid2] = dispatcher
+                    dispatcher.start()
 
-            if build:
-                logging.debug("Task received")
-                dispatcher = Dispatcher(build)
-                self.build_list[dispatcher.uuid2] = dispatcher
-                dispatcher.start()
+            self.check_builds_status()
+
+    def check_builds_status(self):
+        builds = mongo.builds.find({"status": "dispatched"})
+        for build in builds:
+            finished = 0
+            jobs = build.get_jobs()
+            if len(jobs) == build.job_count:
+                for job in jobs:
+                    if job.status == 'succeeded':
+                        finished += 1
+                    elif job.status == 'failed':
+                        build.set_status('failed')
+
+                if finished == len(jobs):
+                    build.finishing()

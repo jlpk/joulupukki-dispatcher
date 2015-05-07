@@ -6,6 +6,7 @@ import shutil
 import pecan
 import git
 import yaml
+import datetime
 
 from joulupukki.common.logger import get_logger, get_logger_path
 from joulupukki.common.carrier import Carrier
@@ -44,7 +45,8 @@ class Dispatcher(Thread):
         # Create docker client
         self.cli = Client(base_url='unix://var/run/docker.sock', version=pecan.conf.docker_version)
         # Set folders
-        self.folder = build.get_folder_path()
+        self.folder = build.get_folder_path() + "/output/"
+        
         self.folder_source = build.get_source_folder_path()
         # Create folders
         if not os.path.exists(self.folder):
@@ -54,6 +56,7 @@ class Dispatcher(Thread):
             raise Exception("%s should be a folder" % self.folder)
         # Prepare logger
         self.logger = get_logger(self.build)
+        self.logger.error(self.folder)
 
     def git_clone(self):
         self.logger.info("Cloning")
@@ -126,7 +129,6 @@ class Dispatcher(Thread):
         return False
 
     def dispatch(self, packer_conf, root_folder):
-        self.build.set_status('dispatching')
 
         carrier = Carrier(pecan.conf.rabbit_server,
                           pecan.conf.rabbit_port,
@@ -166,17 +168,25 @@ class Dispatcher(Thread):
                 else:
                     self.logger.info("Posted build to %s" % queue)
 
-        self.build.set_status('succeeded')
-        self.logger.info("Packaging finished for all distros")
+
+    def run2(self):
+        self.logger.info("begin")
+        self.build.set_status("reading")
+        self.logger.info("middle")
+        self.build.set_status("building")
+        self.logger.info("end")
 
     def run(self):
         # GIT
         self.logger.info("Started")
-        self.build.set_status('clonning')
+        # self.build.set_status('clonning')
         if self.get_sources() is True:
             # YAML
             self.logger.debug("Read .packer.yml")
-            self.build.set_status('reading')
+            self.logger.debug(datetime.datetime.now().time())
+            self.logger.error(self.build)
+            self.build.set_status('bobing')
+            # self.build.set_status('reading')
             global_packer_conf_file_name = os.path.join(self.folder_source, ".packer.yml")
             if os.path.exists(global_packer_conf_file_name):
                 global_packer_conf_stream = file(global_packer_conf_file_name, 'r')
@@ -193,7 +203,7 @@ class Dispatcher(Thread):
                             packer_conf_stream = file(
                                 packer_conf_file_name,
                                 'r'
-                            )
+                           )
                             packer_conf = yaml.load(packer_conf_stream)
                             # Get root folder of this package
                             packer_conf_relative_file_name = (
@@ -233,5 +243,10 @@ class Dispatcher(Thread):
             shutil.rmtree(self.folder_source)
         """
         self.logger.info("Tmp folders NOT deleted: TODO")
+        # time.sleep(2)
+        self.logger.debug(datetime.datetime.now().time())
+        self.logger.error(self.build)
+        #time.sleep(0.0000000001)
+        self.build.set_status("building")
         # Set end time
-        self.build.finishing()
+        # self.build.finishing()

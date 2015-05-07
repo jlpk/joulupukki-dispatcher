@@ -19,9 +19,8 @@ def setup_app(config):
                    logging=getattr(config, 'logging', {}),
                    **app_conf)
 
-
     manager = Manager(app)
-    manager.start()
+    manager.run()
 
 
     def signal_handler(signal, frame):
