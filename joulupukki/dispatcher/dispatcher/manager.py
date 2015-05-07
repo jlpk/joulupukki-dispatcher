@@ -53,7 +53,7 @@ class Manager(object):
             self.check_builds_status()
 
     def check_builds_status(self):
-        builds = mongo.builds.find({"status": "dispatched"})
+        builds = mongo.builds.find({"status": "building"})
         for build in builds:
             finished = 0
             jobs = build.get_jobs()
