@@ -59,7 +59,7 @@ class Manager(object):
             build = Build(b)
             jobs = build.get_jobs()
 
-            if len(jobs) == build.job_count:
+            if len(jobs) == build.job_count and build.job_count > 0:
                 for job in jobs:
                     if job.status in ['succeeded', 'failed']:
                         finished += 1
