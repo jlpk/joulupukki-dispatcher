@@ -10,6 +10,7 @@ import datetime
 
 from joulupukki.common.logger import get_logger, get_logger_path
 from joulupukki.common.carrier import Carrier
+from joulupukki.common.datamodel.job import Job
 
 from docker import Client
 
@@ -151,12 +152,21 @@ class Dispatcher(Thread):
                 build_conf['distro'] = distro_name
                 build_conf['branch'] = self.branch
                 build_conf['root_folder'] = root_folder
+                job_data = {
+                    'distro': distro_name,
+                    'username': self.build.username,
+                    'project_name': self.build.project_name,
+                    'build_id': self.build.id_,
+                }
+                job = Job(job_data)
+                job.create()
                 message = {
                     'distro_name': distro_name,
                     'build_conf': build_conf,
                     'root_folder': root_folder,
                     'log_path': get_logger_path(self.build),
                     'id_': self.id_,
+                    'job_id': job.id_,
                     'build': self.build.dumps(),
                     'build_path': self.build.get_folder_path()
                 }
