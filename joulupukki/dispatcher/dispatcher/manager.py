@@ -65,7 +65,7 @@ class Manager(object):
                         finished += 1
 
                 if finished == len(jobs):
-                    if all([True for j in jobs if j.status == 'succeeded']):
+                    if all([True if j.status == 'succeeded' else False for j in jobs]):
                         build.set_status('succeeded')
                     else:
                         build.set_status('failed')
