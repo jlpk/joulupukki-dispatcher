@@ -9,3 +9,8 @@ override_dh_clean:
 	rm -rf ./*egg
 	dh_clean
 
+override_dh_install:
+	dh_install
+	mv debian/joulupukki-dispatcher/etc/joulupukki/config.py debian/joulupukki-dispatcher/etc/joulupukki/joulupukki-dispatcher.conf
+
+
