@@ -192,6 +192,11 @@ class Dispatcher(Thread):
                 # File with "include" directive
 
                 if 'include' in global_packer_conf:
+                    # Get external repos
+                    if global_packer_conf.get('repos'):
+                        if global_packer_conf.get('repos').get('rpm'):
+                            global_rpmrepos = global_packer_conf.get('repos').get('rpm')
+                    # Read all sub .packer.yml files
                     for packer_file_glob in global_packer_conf.get("include"):
                         for packer_conf_file_name in glob.glob(os.path.join(
                             self.folder_source,
@@ -200,8 +205,14 @@ class Dispatcher(Thread):
                             packer_conf_stream = file(
                                 packer_conf_file_name,
                                 'r'
-                           )
+                            )
                             packer_conf = yaml.load(packer_conf_stream)
+                            # Add global external repos
+                            if not packer_conf.get('repos'):
+                                packer_conf['repos'] = {}
+                            if not packer_conf.get('repos').get('rpm'):
+                                packer_conf['repos']['rpm'] = []
+                            packer_conf['repos']['rpm'] += global_repos
                             # Get root folder of this package
                             packer_conf_relative_file_name = (
                                 packer_conf_file_name.replace(
