@@ -128,7 +128,7 @@ class Dispatcher(Thread):
             return False
         return False
 
-    def dispatch(self, packer_conf, root_folder):
+    def dispatch(self, packer_conf, root_folder, global_conf=None):
 
         carrier = Carrier(pecan.conf.rabbit_server,
                           pecan.conf.rabbit_port,
@@ -149,6 +149,15 @@ class Dispatcher(Thread):
                 # if not build_conf['type'] == 'docker':
                 queue = "%s.queue" % build_conf['type']
                 carrier.declare_queue(queue)
+
+                # Add global external repos
+                if not build_conf.get('repos'):
+                    build_conf['repos'] = {}
+                if not build_conf.get('repos').get('rpm'):
+                    build_conf['repos']['rpm'] = []
+                if global_conf:
+                    build_conf['repos']['rpm'] += global_conf['repos']['rpm']
+                #
                 build_conf['distro'] = distro_name
                 build_conf['branch'] = self.branch
                 build_conf['root_folder'] = root_folder
@@ -193,9 +202,11 @@ class Dispatcher(Thread):
 
                 if 'include' in global_packer_conf:
                     # Get external repos
+                    global_conf = {}
                     if global_packer_conf.get('repos'):
+                        global_conf['repos'] = {}
                         if global_packer_conf.get('repos').get('rpm'):
-                            global_rpmrepos = global_packer_conf.get('repos').get('rpm')
+                            global_conf['repos']['rpm'] = global_packer_conf.get('repos').get('rpm')
                     # Read all sub .packer.yml files
                     for packer_file_glob in global_packer_conf.get("include"):
                         for packer_conf_file_name in glob.glob(os.path.join(
@@ -207,12 +218,7 @@ class Dispatcher(Thread):
                                 'r'
                             )
                             packer_conf = yaml.load(packer_conf_stream)
-                            # Add global external repos
-                            if not packer_conf.get('repos'):
-                                packer_conf['repos'] = {}
-                            if not packer_conf.get('repos').get('rpm'):
-                                packer_conf['repos']['rpm'] = []
-                            packer_conf['repos']['rpm'] += global_repos
+
                             # Get root folder of this package
                             packer_conf_relative_file_name = (
                                 packer_conf_file_name.replace(
@@ -225,7 +231,7 @@ class Dispatcher(Thread):
                             )
 
                             # Run packer
-                            self.dispatch(packer_conf, root_folder)
+                            self.dispatch(packer_conf, root_folder, global_conf)
 
                 else:
                     root_folder = '.'
