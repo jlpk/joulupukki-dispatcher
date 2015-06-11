@@ -12,6 +12,14 @@ Installation
 ============
 
 
+Install before joulupukki-common
+
+After
+
+
+``pip install -r requirements.txt``
+
+``python setup.py develop``
 
 
 
@@ -44,6 +52,7 @@ You can build the documentation ``tox -edocs``. The HTML documentation will be b
 Dev Env
 =======
 
-apt-get install rpm
-virtualenv --system-site-packages env
+``apt-get install rpm``
+
+``virtualenv --system-site-packages env``
 
