@@ -62,16 +62,19 @@ class Dispatcher(Thread):
         self.logger.info("Cloning")
         # Reworking url to handle password
         url_splitted = urlparse.urlsplit(self.source_url)
-        username = url_splitted.username
-        if username is None:
-            username = 'anonymous'
-        password = url_splitted.password
-        if password is None:
-            password = 'anonymous'
-        url_data = [d for d in list(url_splitted)]
-        new_netloc = username + ":" + password + "@" + url_data[1].split('@')[-1]
-        url_data[1] = new_netloc
-        source_url = urlparse.urlunsplit(url_data)
+        if url_splitted.scheme in ['http', 'https']:
+            username = url_splitted.username
+            if username is None:
+                username = 'anonymous'
+            password = url_splitted.password
+            if password is None:
+                password = 'anonymous'
+            url_data = [d for d in list(url_splitted)]
+            new_netloc = username + ":" + password + "@" + url_data[1].split('@')[-1]
+            url_data[1] = new_netloc
+            source_url = urlparse.urlunsplit(url_data)
+        else:
+            source_url = self.source_url
         # Clone repo
         try:
             repo = git.Repo.clone_from(source_url, self.folder_source)
